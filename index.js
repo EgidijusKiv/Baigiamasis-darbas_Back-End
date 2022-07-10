@@ -46,9 +46,10 @@ app.post('/users', (req, res) => {
   console.log(req.body);
   client.connect(async () => {
     const collection = client.db(DB_NAME).collection(USERS_COLLECTION);
-    const {
-      first_name, last_name, email, age,
-    } = req.body;
+    const { email, age } = req.body;
+    const first_name = req.body.first_name.charAt(0).toUpperCase() + req.body.first_name.slice(1);
+    const last_name = req.body.last_name.charAt(0).toUpperCase() + req.body.last_name.slice(1);
+
     const result = await collection.insertOne({
       first_name,
       last_name,
@@ -78,7 +79,7 @@ app.put('/users', (req, res) => {
   client.connect(async (err, clientDb) => {
     if (err) {
       res.send('Something went wrong!!');
-      clientDb.close();
+      client.close();
     } else {
       const collection = client.db(DB_NAME).collection(USERS_COLLECTION);
       const {
