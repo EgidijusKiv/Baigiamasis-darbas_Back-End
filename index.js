@@ -45,20 +45,29 @@ app.get('/users', (req, res) => {
 app.post('/users', (req, res) => {
   console.log(req.body);
   client.connect(async () => {
-    const collection = client.db(DB_NAME).collection(USERS_COLLECTION);
-    const { email, age } = req.body;
-    const first_name = req.body.first_name.charAt(0).toUpperCase() + req.body.first_name.slice(1);
-    const last_name = req.body.last_name.charAt(0).toUpperCase() + req.body.last_name.slice(1);
-
-    const result = await collection.insertOne({
-      first_name,
-      last_name,
-      email,
-      age: Number(age),
-    });
-    client.close();
-
-    res.json(result);
+    try {
+      const collection = client.db(DB_NAME).collection(USERS_COLLECTION);
+      const { email, age } = req.body;
+      const first_name = req.body.first_name.charAt(0).toUpperCase() + req.body.first_name.slice(1);
+      const last_name = req.body.last_name.charAt(0).toUpperCase() + req.body.last_name.slice(1);
+      const filter = await collection.find({ email }).toArray();
+      if (filter.length > 0) {
+        res.send('Toks vartotojas jau yra sukurtas');
+        client.close();
+      } else {
+        const result = await collection.insertOne({
+          first_name,
+          last_name,
+          email,
+          age: Number(age),
+        });
+        client.close();
+        res.json(result);
+      }
+    } catch (error) {
+      res.send('Something went wrong!!');
+      client.close();
+    }
   });
 });
 
@@ -82,12 +91,16 @@ app.put('/users', (req, res) => {
       client.close();
     } else {
       const collection = client.db(DB_NAME).collection(USERS_COLLECTION);
-      const {
-        _id, first_name, last_name, email, age,
-      } = req.body;
+      const { _id, email, age } = req.body;
+      const first_name = req.body.first_name.charAt(0).toUpperCase() + req.body.first_name.slice(1);
+      const last_name = req.body.last_name.charAt(0).toUpperCase() + req.body.last_name.slice(1);
+
       const filter = { _id: ObjectId(_id) };
       const newValues = {
-        first_name, last_name, email, age,
+        first_name,
+        last_name,
+        email,
+        age: Number(age),
       };
       try {
         const result = await collection.replaceOne(filter, newValues);
