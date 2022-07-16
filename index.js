@@ -43,7 +43,6 @@ app.get('/users', (req, res) => {
 });
 
 app.post('/users', (req, res) => {
-  console.log(req.body);
   client.connect(async () => {
     try {
       const collection = client.db(DB_NAME).collection(USERS_COLLECTION);
@@ -52,7 +51,7 @@ app.post('/users', (req, res) => {
       const last_name = req.body.last_name.charAt(0).toUpperCase() + req.body.last_name.slice(1);
       const filter = await collection.find({ email }).toArray();
       if (filter.length > 0) {
-        res.send('Toks vartotojas jau yra sukurtas');
+        res.send([{ acknowledged: false }, 'Toks vartotojas jau yra sukurtas']);
         client.close();
       } else {
         const result = await collection.insertOne({
@@ -72,7 +71,6 @@ app.post('/users', (req, res) => {
 });
 
 app.delete('/users/:id', (req, res) => {
-  console.log(req.params);
   client.connect(async () => {
     const collection = client.db(DB_NAME).collection(USERS_COLLECTION);
     const result = await collection.deleteOne({
@@ -87,7 +85,7 @@ app.delete('/users/:id', (req, res) => {
 app.put('/users', (req, res) => {
   client.connect(async (err) => {
     if (err) {
-      res.send('Something went wrong with DB connection!!!');
+      res.send([{ acknowledged: false }, 'Something went wrong with DB connection!!!']);
       client.close();
     } else {
       const collection = client.db(DB_NAME).collection(USERS_COLLECTION);
