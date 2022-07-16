@@ -85,9 +85,9 @@ app.delete('/users/:id', (req, res) => {
 });
 
 app.put('/users', (req, res) => {
-  client.connect(async (err, clientDb) => {
+  client.connect(async (err) => {
     if (err) {
-      res.send('Something went wrong!!');
+      res.send('Something went wrong with DB connection!!!');
       client.close();
     } else {
       const collection = client.db(DB_NAME).collection(USERS_COLLECTION);
@@ -104,11 +104,11 @@ app.put('/users', (req, res) => {
       };
       try {
         const result = await collection.replaceOne(filter, newValues);
-        res.send(result);
-        clientDb.close();
+        res.send([result, 'Vartotojas pakoreguotas']);
+        client.close();
       } catch (error) {
         res.send('Something went wrong!!');
-        clientDb.close();
+        client.close();
       }
     }
   });
